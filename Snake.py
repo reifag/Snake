@@ -6,7 +6,6 @@ from random import randint, seed
 # Create a new random function takes n
 def rand(n):
     result = randint(0, int(n))
-    print('Rand function called result: ', result)
     return result
 
 
@@ -35,8 +34,8 @@ def move_snake(snake, DISPLAYSURF, food, constants, colors):
        then applies the velocity"""
     vel, head = constants['vel'], snake[-1]
     if death(snake):
-        print("DEATH")
-        DISPLAYSURF.fill(colors['head'])
+        # TODO end game
+        pass
 
     if constants['len'] == len(snake):
         snake.pop(0)
@@ -55,16 +54,16 @@ def out_screen_check(snake, constants):
     for i in range(len(head)):
         head[i] = head[i] % res[i]
 
-    # print('Out of screen: ', head, 'Snake: ', snake)
     snake.pop()
     snake.append(tuple(head))
     return snake
 
 
-def create_food(constants):
+def create_food(snake, constants):
     res, box = constants['res'], constants['box']
     food = [rand(res[0]) // box * box, rand(res[0]) // box * box]
-    print('Create food: ', food)
+    while food in snake:
+        food = [rand(res[0]) // box * box, rand(res[0]) // box * box]
     return tuple(food)
 
 
@@ -79,12 +78,10 @@ def death(snake):
 
 def eat_food(snake, food, DISPLAYSURF, constants, colors):
     head = snake[-1]
-
-    # if food[0] == head[0] and food[1] == head[1]:
     if head == food:
         del food
         constants['len'] += 1
-        food = create_food(constants)
+        food = create_food(snake, constants)
         draw(snake, food, DISPLAYSURF, constants, colors)
     return food
 
@@ -109,7 +106,7 @@ def main():
     # initialized the snake to be at the middle of the board
     snake = [(16 * constants['box'], 16 * constants['box'])]
 
-    food = create_food(constants)
+    food = create_food(snake, constants)
 
     draw(snake, food, DISPLAYSURF, constants, colors)
 
