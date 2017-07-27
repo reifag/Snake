@@ -1,6 +1,8 @@
-import pygame, sys
-from pygame.locals import *
+import sys
 from random import randint, seed
+
+import pygame
+from pygame.locals import *
 
 
 # Create a new random function takes n
@@ -17,7 +19,7 @@ def get_velocity(key, box):
     return movements[key]
 
 
-def draw(snake, food, DISPLAYSURF, constants, colors):
+def draw(snake, food, constants, colors, DISPLAYSURF):
     box = constants['box']
     # Draws the snake by draw every link in the snake body as a color['snake'] rectangle
     for link in snake[:-1]:
@@ -28,7 +30,7 @@ def draw(snake, food, DISPLAYSURF, constants, colors):
     pygame.draw.rect(DISPLAYSURF, colors['food'], (food[0], food[1], box, box))
 
 
-def move_snake(snake, DISPLAYSURF, food, constants, colors):
+def move_snake(snake, food, constants, colors=None, DISPLAYSURF=None):
     """moves by removing the 0th position from the list
        and then fills display surface with the background color
        then applies the velocity"""
@@ -39,13 +41,14 @@ def move_snake(snake, DISPLAYSURF, food, constants, colors):
 
     if constants['len'] == len(snake):
         snake.pop(0)
-    # Redraws the display surface to hide the previous snake
-    DISPLAYSURF.fill(colors['BG'])
     # Takes the position of the head (last index in the list)
     # And adds the velocity to get the new head position
     snake.append((head[0] + vel[0], head[1] + vel[1]))
     out_screen_check(snake, constants)
-    draw(snake, food, DISPLAYSURF, constants, colors)
+    # Redraws the display surface to hide the previous snake
+    if DISPLAYSURF is not None:
+        DISPLAYSURF.fill(colors['BG'])
+        draw(snake, food, constants, colors, DISPLAYSURF)
 
 
 def out_screen_check(snake, constants):
@@ -62,6 +65,7 @@ def out_screen_check(snake, constants):
 def create_food(snake, constants):
     res, box = constants['res'], constants['box']
     food = [rand(res[0]) // box * box, rand(res[0]) // box * box]
+    # Prevents the food from spawning inside the snake's body
     while food in snake:
         food = [rand(res[0]) // box * box, rand(res[0]) // box * box]
     return tuple(food)
@@ -70,25 +74,27 @@ def create_food(snake, constants):
 def death(snake):
     if snake.count(snake[-1]) == len(snake):
         return False
-
+    # Checks to see if the head intersects the body
     if snake[-1] in snake[:-1]:
         return True
     return False
 
 
-def eat_food(snake, food, DISPLAYSURF, constants, colors):
+def eat_food(snake, food, constants, colors=None, DISPLAYSURF=None):
     head = snake[-1]
     if head == food:
         del food
         constants['len'] += 1
         food = create_food(snake, constants)
-        draw(snake, food, DISPLAYSURF, constants, colors)
+        # checks if the snake needs to be drawn
+        if DISPLAYSURF is not None:
+            draw(snake, food, constants, colors, DISPLAYSURF)
     return food
 
 
 def main():
     colors = {"snake": (  0, 255,   0),
-              "head" : (255, 255, 255),
+              "head" : (0, 100, 0),
               "food" : (255,   0,   0),
               "BG"   : ( 51,  51,  51)}
 
@@ -107,8 +113,7 @@ def main():
     snake = [(16 * constants['box'], 16 * constants['box'])]
 
     food = create_food(snake, constants)
-
-    draw(snake, food, DISPLAYSURF, constants, colors)
+    draw(snake, food, constants, colors, DISPLAYSURF)
 
     while True:
         for event in pygame.event.get():
@@ -121,9 +126,9 @@ def main():
                     # Updates the velocity to the current key press
                     constants['vel'] = get_velocity(event.key, constants['box'])
 
-        food = eat_food(snake, food, DISPLAYSURF, constants, colors)
+        food = eat_food(snake, food, constants, colors, DISPLAYSURF)
         # Moves the snake and applies the speed change
-        move_snake(snake, DISPLAYSURF, food, constants, colors)
+        move_snake(snake, food, constants, colors, DISPLAYSURF)
         # updates the display surface and performs one tick of the clock
         pygame.display.update()
         FPSCLOCK.tick(constants['fps'])
