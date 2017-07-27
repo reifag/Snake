@@ -19,18 +19,18 @@ def get_velocity(key, box):
     return movements[key]
 
 
-def draw(snake, food, constants, colors, DISPLAYSURF):
+def draw(snake, food, constants, colors, display_surface):
     box = constants['box']
     # Draws the snake by draw every link in the snake body as a color['snake'] rectangle
     for link in snake[:-1]:
-        pygame.draw.rect(DISPLAYSURF, colors['snake'], (link[0], link[1], box, box))
+        pygame.draw.rect(display_surface, colors['snake'], (link[0], link[1], box, box))
     # Draws the head using a separate color
-    pygame.draw.rect(DISPLAYSURF, colors['head'], (snake[-1][0], snake[-1][1], box, box))
+    pygame.draw.rect(display_surface, colors['head'], (snake[-1][0], snake[-1][1], box, box))
     # Draws the food as a rectangle with color['food']
-    pygame.draw.rect(DISPLAYSURF, colors['food'], (food[0], food[1], box, box))
+    pygame.draw.rect(display_surface, colors['food'], (food[0], food[1], box, box))
 
 
-def move_snake(snake, food, constants, colors=None, DISPLAYSURF=None):
+def move_snake(snake, food, constants, colors=None, display_surface=None):
     """moves by removing the 0th position from the list
        and then fills display surface with the background color
        then applies the velocity"""
@@ -46,9 +46,9 @@ def move_snake(snake, food, constants, colors=None, DISPLAYSURF=None):
     snake.append((head[0] + vel[0], head[1] + vel[1]))
     out_screen_check(snake, constants)
     # Redraws the display surface to hide the previous snake
-    if DISPLAYSURF is not None:
-        DISPLAYSURF.fill(colors['BG'])
-        draw(snake, food, constants, colors, DISPLAYSURF)
+    if display_surface is not None:
+        display_surface.fill(colors['BG'])
+        draw(snake, food, constants, colors, display_surface)
 
 
 def out_screen_check(snake, constants):
@@ -80,15 +80,15 @@ def death(snake):
     return False
 
 
-def eat_food(snake, food, constants, colors=None, DISPLAYSURF=None):
+def eat_food(snake, food, constants, colors=None, display_surface=None):
     head = snake[-1]
     if head == food:
         del food
         constants['len'] += 1
         food = create_food(snake, constants)
         # checks if the snake needs to be drawn
-        if DISPLAYSURF is not None:
-            draw(snake, food, constants, colors, DISPLAYSURF)
+        if display_surface is not None:
+            draw(snake, food, constants, colors, display_surface)
     return food
 
 
@@ -105,15 +105,15 @@ def main():
                  'vel': (0, 0)}
     seed(10)
     pygame.init()
-    FPSCLOCK = pygame.time.Clock()
-    DISPLAYSURF = pygame.display.set_mode(constants['res'])
-    DISPLAYSURF.fill(colors['BG'])
+    fps_clock = pygame.time.Clock()
+    display_surface = pygame.display.set_mode(constants['res'])
+    display_surface.fill(colors['BG'])
     pygame.display.set_caption('Snake Game')
     # initialized the snake to be at the middle of the board
     snake = [(16 * constants['box'], 16 * constants['box'])]
 
     food = create_food(snake, constants)
-    draw(snake, food, constants, colors, DISPLAYSURF)
+    draw(snake, food, constants, colors, display_surface)
 
     while True:
         for event in pygame.event.get():
@@ -126,12 +126,12 @@ def main():
                     # Updates the velocity to the current key press
                     constants['vel'] = get_velocity(event.key, constants['box'])
 
-        food = eat_food(snake, food, constants, colors, DISPLAYSURF)
+        food = eat_food(snake, food, constants, colors, display_surface)
         # Moves the snake and applies the speed change
-        move_snake(snake, food, constants, colors, DISPLAYSURF)
+        move_snake(snake, food, constants, colors, display_surface)
         # updates the display surface and performs one tick of the clock
         pygame.display.update()
-        FPSCLOCK.tick(constants['fps'])
+        fps_clock.tick(constants['fps'])
 
 
 if __name__ == '__main__':
