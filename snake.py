@@ -4,6 +4,8 @@ from random import randint, seed
 import pygame
 from pygame.locals import *
 
+import variables
+
 
 # Create a new random function takes n
 def rand(n):
@@ -12,8 +14,9 @@ def rand(n):
 
 
 def get_velocity(key, box):
+    # TODO change key values to something else
     # Using a dictionary as a switch statement
-    movements = {K_LEFT: (-box, 0), K_UP: (0, -box),
+    movements = {K_LEFT : (-box, 0), K_UP: (0, -box),
                  K_RIGHT: (box, 0), K_DOWN: (0, box)}
     # Assigns the velocity and returns the velocity
     return movements[key]
@@ -36,7 +39,6 @@ def move_snake(snake, food, constants, colors=None, display_surface=None):
        then applies the velocity"""
     vel, head = constants['vel'], snake[-1]
     if death(snake):
-        # TODO end game
         pass
 
     if constants['len'] == len(snake):
@@ -93,16 +95,8 @@ def eat_food(snake, food, constants, colors=None, display_surface=None):
 
 
 def main():
-    colors = {"snake": (  0, 255,   0),
-              "head" : (0, 100, 0),
-              "food" : (255,   0,   0),
-              "BG"   : ( 51,  51,  51)}
+    colors, constants = variables.colors, variables.play_constants
 
-    constants = {'fps': 15,
-                 'res': (640, 640),
-                 'box': 20,
-                 'len': 4,
-                 'vel': (0, 0)}
     seed(10)
     pygame.init()
     fps_clock = pygame.time.Clock()
