@@ -2,15 +2,15 @@ import sys
 
 import pygame
 from numpy.random import randint as rand
-from pygame.locals import *
+from pygame.locals import KEYUP, K_DOWN, K_LEFT, K_RIGHT, K_UP, QUIT
 
 import variables
+from snake_learn import Creature
 
 
 def get_velocity(key, box):
     # Using a dictionary as a switch statement
-    movements = {K_LEFT : (-box, 0), K_UP: (0, -box),
-                 K_RIGHT: (box, 0), K_DOWN: (0, box)}
+    movements = {K_LEFT: (-box, 0), K_UP: (0, -box), K_RIGHT: (box, 0), K_DOWN: (0, box)}
     # Assigns the velocity and returns the velocity
     return movements[key]
 
@@ -26,42 +26,24 @@ def draw(snake, food, constants, colors, display_surface):
     pygame.draw.rect(display_surface, colors['food'], (food[0], food[1], box, box))
 
 
-def move_snake(snake, food, constants, colors=None, display_surface=None, creature=None):
+def move_snake(creature, snake, food, constants, colors=None, display_surface=None):
     """moves by removing the 0th position from the list
        and then fills display surface with the background color
        then applies the velocity"""
-    # TODO fix this Ugly mess 2
     head = snake[-1]
-    if creature is not None:
-        if death(snake):
-            return True
-        # if length constant is greater than snake list length don't pop tail
-        if creature.len == len(snake):
-            snake.pop(0)
-        # Takes the position of the head (last index in the list)
-        # And adds the velocity to get the new head position
-        snake.append((head[0] + creature.vel[0], head[1] + creature.vel[1]))
-        out_screen_check(snake, constants)
-        # Redraws the display surface to hide the previous snake
-        if display_surface is not None:
-            display_surface.fill(colors['BG'])
-            draw(snake, food, constants, colors, display_surface)
-    else:
-        vel = constants['vel']
-        # Returns True if the snake dies
-        if death(snake):
-            return True
-        # if length constant is greater than snake list length don't pop tail
-        if constants['len'] == len(snake):
-            snake.pop(0)
-        # Takes the position of the head (last index in the list)
-        # And adds the velocity to get the new head position
-        snake.append((head[0] + vel[0], head[1] + vel[1]))
-        out_screen_check(snake, constants)
-        # Redraws the display surface to hide the previous snake
-        if display_surface is not None:
-            display_surface.fill(colors['BG'])
-            draw(snake, food, constants, colors, display_surface)
+    if death(snake):
+        return True
+    # if length constant is greater than snake list length don't pop tail
+    if creature.len == len(snake):
+        snake.pop(0)
+    # Takes the position of the head (last index in the list)
+    # And adds the velocity to get the new head position
+    snake.append((head[0] + creature.vel[0], head[1] + creature.vel[1]))
+    out_screen_check(snake, constants)
+    # Redraws the display surface to hide the previous snake
+    if display_surface is not None:
+        display_surface.fill(colors['BG'])
+        draw(snake, food, constants, colors, display_surface)
 
 
 def out_screen_check(snake, constants):
@@ -93,33 +75,20 @@ def death(snake):
     return False
 
 
-def eat_food(snake, food, constants, colors=None, display_surface=None, creature=None):
-    # TODO FIX THIS UGLY MESS 1
-    head = snake[-1]
-    if creature != None:
-        if head == food:
-            del food
-            creature.len += 1
-            food = create_food(snake, constants)
-            # checks if the snake needs to be drawn
-            if display_surface is not None:
-                draw(snake, food, constants, colors, display_surface)
-    else:
-        if head == food:
-            del food
-            constants['len'] += 1
-            food = create_food(snake, constants)
-            # checks if the snake needs to be drawn
-            if display_surface is not None:
-                draw(snake, food, constants, colors, display_surface)
-
+def eat_food(creature, snake, food, constants, colors=None, display_surface=None):
+    if snake[-1] == food:
+        creature.len += 1
+        food = create_food(snake, constants)
+        # checks if the snake needs to be drawn
+        if display_surface is not None:
+            draw(snake, food, constants, colors, display_surface)
     return food
 
 
 def main():
     # acquires the constants required to play the game
-    colors, constants = variables.colors, variables.play_constants
-
+    colors, constants = variables.colors, variables.game_constants
+    creature = Creature()
     # Initializes the game
     pygame.init()
     # Initializes the game clock
@@ -142,11 +111,11 @@ def main():
             if event.type == KEYUP:
                 if event.key in [K_UP, K_DOWN, K_RIGHT, K_LEFT]:
                     # Updates the velocity to the current key press
-                    constants['vel'] = get_velocity(event.key, constants['box'])
+                    creature.vel = get_velocity(event.key, constants['box'])
 
-        food = eat_food(snake, food, constants, colors, display_surface)
+        food = eat_food(creature, snake, food, constants, colors=colors, display_surface=display_surface)
         # Moves the snake and applies the speed change
-        move_snake(snake, food, constants, colors, display_surface)
+        move_snake(creature, snake, food, constants, colors=colors, display_surface=display_surface)
         # updates the display surface and performs one tick of the clock
         pygame.display.update()
         fps_clock.tick(constants['fps'])

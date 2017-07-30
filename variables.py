@@ -12,11 +12,9 @@ colors = {"snake": (0, 255, 0),
           "food" : (255, 0, 0),
           "BG"   : (51, 51, 51)}
 
-play_constants = {'fps': 15,
+game_constants = {'fps': 15,
                   'res': (640, 640),
-                  'box': 20,
-                  'len': 4,
-                  'vel': (0, 0)}
+                  'box': 20}
 
 board_values = {'head': 2,
                 'body': -1,

@@ -2,3 +2,4 @@
 *.xml
 .idea/Snake.iml
 *.pyc
+/snake_learn_test.py
